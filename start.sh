@@ -36,6 +36,6 @@ cat /etc/squid/squid.conf > /etc/squid/squid-custom.conf
 	echo "https_port 443 accel vhost cert=/etc/ssl/certs/host.crt.pem key=/etc/ssl/private/host.key.pem options=NO_SSLv3,NO_TLSv1,SINGLE_DH_USE capath=/etc/ssl/certs"
 ) >> /etc/squid/squid-custom.conf
 
-add-http-vhost 127.0.0.1 6447 mfi-server.orion.voria.net
+add-http-vhost 127.0.0.1 1234 test-server.com
 
 exec /usr/sbin/squid -d 2 -N -f /etc/squid/squid-custom.conf
