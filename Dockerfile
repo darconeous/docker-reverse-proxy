@@ -31,7 +31,9 @@ RUN chmod +x /start.sh
 # For debugging
 #RUN apt-get -y install procps vim tmux man less net-tools
 
-VOLUME ["/etc/ssl/certs", "/etc/ssl/private"]
+ADD reverse-proxy.conf /etc/reverse-proxy/reverse-proxy.conf
+
+VOLUME ["/etc/ssl/certs", "/etc/ssl/private", "/etc/reverse-proxy"]
 
 CMD ["/start.sh"]
 
