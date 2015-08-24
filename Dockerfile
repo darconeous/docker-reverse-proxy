@@ -1,4 +1,4 @@
-FROM debian/wheezy
+FROM debian:wheezy
 
 ENV DEBIAN_FRONTEND noninteractive
 

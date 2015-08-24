@@ -4,7 +4,6 @@ After=docker.service
 
 [Service]
 TimeoutStartSec=0
-Type=oneshot
 RemainAfterExit=true
 ExecStartPre=-/usr/bin/docker kill reverse-proxy
 ExecStartPre=-/usr/bin/docker rm -f reverse-proxy
@@ -15,7 +14,6 @@ ExecStart=/usr/bin/docker run \
 	--name reverse-proxy \
 	-p 80:80/tcp \
 	-p 443:443/tcp \
-	-v /etc/squid/reverse-proxy.conf:/etc/squid/squid.conf \
 	--volumes-from=reverse-proxy-backing \
 	darco/reverse-proxy
 ExecStop=/usr/bin/docker stop -t 2 reverse-proxy
