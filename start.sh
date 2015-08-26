@@ -2,6 +2,8 @@
 
 VHOSTNUMBER=0
 
+PROXY_CLIENT_CA=/etc/ssl/certs/proxy-client-ca.pem
+
 set -x
 
 add-http-vhost () {
@@ -58,7 +60,9 @@ https-listen () {
 	[ -f "$dhparams" ] || openssl dhparam -out "$dhparams" 2048
 
 	(
-		echo "https_port ${port} accel vhost cert=/etc/ssl/certs/host.crt.pem key=/etc/ssl/private/host.key.pem options=$ssl_options dhparams=$dhparams cipher=$cipher capath=/etc/ssl/certs"
+		echo -n "https_port ${port} accel vhost cert=/etc/ssl/certs/host.crt.pem key=/etc/ssl/private/host.key.pem options=$ssl_options dhparams=$dhparams cipher=$cipher capath=/etc/ssl/certs"
+		[ -f "${PROXY_CLIENT_CA}" ] && echo "  clientca=${PROXY_CLIENT_CA}"
+		echo ""
 	) >> /etc/squid/squid-custom.conf
 }
 
