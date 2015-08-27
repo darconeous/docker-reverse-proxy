@@ -113,17 +113,13 @@ require-https () {
 
 ###################################################
 
+(
+	echo "fastcgi_keep_conn on;" 1>&3
+	echo "proxy_buffering off;" 1>&3
+	echo "gzip off;" 1>&3
 
-if [ -f /etc/squid3/squid-prefix.conf ]
-then cat /etc/squid3/squid-prefix.conf /etc/squid3/squid.conf > "${SQUID_CONFIG_FILE}"
-else cat /etc/squid3/squid.conf > "${SQUID_CONFIG_FILE}"
-fi
-
-cat /etc/squid3/squid.conf > "${SQUID_CONFIG_FILE}"
-
-###################################################
-
-( . /etc/reverse-proxy/reverse-proxy.conf ) 3> "${NGINX_CONFIG_FILE}" || die Creation of configuration file failed
+	. /etc/reverse-proxy/reverse-proxy.conf
+) 3> "${NGINX_CONFIG_FILE}" || die Creation of configuration file failed
 
 ###################################################
 
