@@ -3,17 +3,29 @@
 VHOSTNUMBER=0
 #set -x
 
-[ "x${PROXY_CLIENT_CA}" = "x" ] && export PROXY_CLIENT_CA=/etc/ssl/certs/proxy-client-ca.pem
+export PROXY_CLIENT_CA=${PROXY_CLIENT_CA-/etc/ssl/certs/proxy-client-ca.pem}
 
-NGINX_CONFIG_FILE=/etc/nginx/conf.d/default.conf
 
 update-ca-certificates
 	
 export SSL_CIPHER="ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:DHE-DSS-AES128-GCM-SHA256:kEDH+AESGCM:ECDHE-RSA-AES128-SHA256:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA:ECDHE-ECDSA-AES128-SHA:ECDHE-RSA-AES256-SHA384:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA:ECDHE-ECDSA-AES256-SHA:DHE-RSA-AES128-SHA256:DHE-RSA-AES128-SHA:DHE-DSS-AES128-SHA256:DHE-RSA-AES256-SHA256:DHE-DSS-AES256-SHA:DHE-RSA-AES256-SHA:!aNULL:!eNULL:!EXPORT:!DES:!RC4:!3DES:!MD5:!PSK"
-export HOST_SSL_CERT=/etc/ssl/certs/host.crt.pem
-export HOST_SSL_KEY=/etc/ssl/private/host.key.pem
+
+export HOST_SSL_CERT=${HOST_SSL_CERT-/etc/ssl/certs/host.crt.pem}
+export HOST_SSL_KEY=${HOST_SSL_KEY-/etc/ssl/private/host.key.pem}
 export HTTPS_PORT=
 export HTTP_PORT=
+
+NGINX_CONFIG_FILE=/etc/nginx/conf.d/default.conf
+
+export REQUIRE_CLIENT_CA=
+
+require-client-ca() {
+	export REQUIRE_CLIENT_CA=1
+}
+
+no-require-client-ca() {
+	export REQUIRE_CLIENT_CA=
+}
 
 # FD 3 is the configuration file
 
@@ -35,18 +47,17 @@ add-server-port-stuff() {
         echo "	ssl_prefer_server_ciphers   on;"
 		echo "  ssl_verify_depth 2;"
 		
-		[ -f "${PROXY_CLIENT_CA}" ] && {
+		[ -f "${PROXY_CLIENT_CA}" ] && [ "${REQUIRE_CLIENT_CA}" = "1" ] && {
 			echo "  ssl_client_certificate ${PROXY_CLIENT_CA};"
+			#echo "  ssl_trusted_certificate ${PROXY_CLIENT_CA};"
 			echo "  ssl_verify_client on;"
 		}
 	else
 		echo "	listen $HTTP_PORT;"
 	fi
 
-	#echo "expires off;"
 	echo "proxy_buffering off;"
 	echo "proxy_buffer_size 4k;"
-	#echo "gzip off;"
 }
 
 add-http-vhost () {
