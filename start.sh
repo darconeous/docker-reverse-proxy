@@ -69,16 +69,20 @@ add-http-vhost () {
 	(
 		echo "server {"
 		add-server-port-stuff
+		echo "	large_client_header_buffers 8 32k;"
 		echo "	server_name $*;"
 		echo "	location / {"
 		echo "		proxy_pass http://$address:$port;"
-		echo "      proxy_http_version 1.1;"
-		echo '		proxy_set_header Connection "";'
+		echo "		proxy_http_version 1.1;"
+		echo '		proxy_redirect off;'
 		echo '		proxy_set_header X-Real-IP $remote_addr;'
 		echo '		proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;'
 		echo '		proxy_set_header X-NginX-Proxy true;'
 		echo '		proxy_set_header Host $http_host;'
-		echo '		proxy_redirect off;'
+		echo '		proxy_set_header Upgrade $http_upgrade;'
+        echo '		proxy_set_header Connection $connection_upgrade;'
+		echo '		proxy_buffers 8 32k;'
+		echo '		proxy_buffer_size 64k;'
 		echo "	}"
 		echo "}"
 	) 1>&3
@@ -94,17 +98,20 @@ add-https-vhost () {
 	(
 		echo "server {"
 		add-server-port-stuff
+		echo "	large_client_header_buffers 8 32k;"
 		echo "	server_name $*;"
 		echo "	location / {"
 		echo "		proxy_pass https://$address:$port;"
-		echo "      proxy_http_version 1.1;"
-		echo '		proxy_set_header Connection "";'
+		echo "		proxy_http_version 1.1;"
+		echo '		proxy_redirect off;'
 		echo '		proxy_set_header X-Real-IP $remote_addr;'
 		echo '		proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;'
 		echo '		proxy_set_header X-NginX-Proxy true;'
-		echo '		proxy_ssl_session_reuse off;'
 		echo '		proxy_set_header Host $http_host;'
-		echo '		proxy_redirect off;'
+		echo '		proxy_set_header Upgrade $http_upgrade;'
+        echo '		proxy_set_header Connection $connection_upgrade;'
+		echo '		proxy_buffers 8 32k;'
+		echo '		proxy_buffer_size 64k;'
 		echo "	}"
 		echo "}"
 	) 1>&3
@@ -142,9 +149,20 @@ require-https () {
 	) 1>&3
 }
 
+enable-websockets () {
+	(
+		echo ' map $http_upgrade $connection_upgrade {'
+		echo "	default Upgrade;"
+		#echo "	''      close;"
+		echo "	''      '';"
+		echo "}"
+	) 1>&3
+}
+
 ###################################################
 
 (
+	enable-websockets
 
 	. /etc/reverse-proxy/reverse-proxy.conf
 ) 3> "${NGINX_CONFIG_FILE}" || die Creation of configuration file failed
