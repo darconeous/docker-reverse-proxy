@@ -41,7 +41,7 @@ add-server-port-stuff() {
 		echo "	ssl on;"
         echo "	ssl_certificate ${HOST_SSL_CERT};"
         echo "	ssl_certificate_key ${HOST_SSL_KEY};"
-        echo "	ssl_session_timeout  5m;"
+        echo "	ssl_session_timeout  120m;"
         #echo "	ssl_protocols        SSLv3 TLSv1;"
         echo "	ssl_ciphers          $SSL_CIPHER;"
         echo "	ssl_prefer_server_ciphers   on;"
@@ -56,8 +56,10 @@ add-server-port-stuff() {
 		echo "	listen $HTTP_PORT;"
 	fi
 
+	echo "client_max_body_size 50M;"
+
 	echo "proxy_buffering off;"
-	echo "proxy_buffer_size 4k;"
+	#echo "proxy_buffer_size 4k;"
 }
 
 add-http-vhost () {
@@ -81,8 +83,6 @@ add-http-vhost () {
 		echo '		proxy_set_header Host $http_host;'
 		echo '		proxy_set_header Upgrade $http_upgrade;'
         echo '		proxy_set_header Connection $connection_upgrade;'
-		echo '		proxy_buffers 8 32k;'
-		echo '		proxy_buffer_size 64k;'
 		echo "	}"
 		echo "}"
 	) 1>&3
@@ -110,8 +110,6 @@ add-https-vhost () {
 		echo '		proxy_set_header Host $http_host;'
 		echo '		proxy_set_header Upgrade $http_upgrade;'
         echo '		proxy_set_header Connection $connection_upgrade;'
-		echo '		proxy_buffers 8 32k;'
-		echo '		proxy_buffer_size 64k;'
 		echo "	}"
 		echo "}"
 	) 1>&3
