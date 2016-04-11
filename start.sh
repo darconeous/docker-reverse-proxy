@@ -56,7 +56,7 @@ add-server-port-stuff() {
 		echo "	listen $HTTP_PORT;"
 	fi
 
-	echo "client_max_body_size 50M;"
+	echo "client_max_body_size 300M;"
 
 	echo "proxy_buffering off;"
 	#echo "proxy_buffer_size 4k;"
