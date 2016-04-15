@@ -15,6 +15,9 @@ export HOST_SSL_KEY=${HOST_SSL_KEY-/etc/ssl/private/host.key.pem}
 export HTTPS_PORT=
 export HTTP_PORT=
 
+export INDEX_PAGE_ROOT=/var/run/reverse-proxy-htdocs
+export INDEX_PAGE_PATH=
+
 NGINX_CONFIG_FILE=/etc/nginx/conf.d/default.conf
 
 export REQUIRE_CLIENT_CA=
@@ -62,17 +65,61 @@ add-server-port-stuff() {
 	#echo "proxy_buffer_size 4k;"
 }
 
+
+add-static-vhost () {
+	local root_path=$1
+	local server_name=$2
+	shift
+	shift
+
+	[ "${INDEX_PAGE_PATH}" != "" ] && {
+		(
+			echo '<br /><a href="https://'$server_name'">'$server_name'</a>'
+		) >> "${INDEX_PAGE_PATH}"
+	}
+
+	(
+		echo "server {"
+		add-server-port-stuff
+		echo "	server_name $server_name;"
+		echo "	location / {"
+		echo "      root $root_path;"
+		echo "	}"
+		echo "}"
+	) 1>&3
+}
+
+add-vhost-index () {
+	local server_name=$1
+	shift
+
+	[ "${server_name}" = "" ] && return
+
+	mkdir -p "$INDEX_PAGE_ROOT"
+	add-static-vhost "$INDEX_PAGE_ROOT" "${server_name}"
+	export INDEX_PAGE_PATH="$INDEX_PAGE_ROOT/index.html"
+	rm -f "$INDEX_PAGE_PATH"
+	touch "$INDEX_PAGE_PATH"
+}
+
 add-http-vhost () {
 	local address=$1
 	local port=$2
 	shift
 	shift
+	local server_name=$*
 	
+	[ "${INDEX_PAGE_PATH}" != "" ] && {
+		(
+			echo '<br /><a href="https://'$server_name'">'$server_name'</a>'
+		) >> "${INDEX_PAGE_PATH}"
+	}
+
 	(
 		echo "server {"
 		add-server-port-stuff
 		echo "	large_client_header_buffers 8 32k;"
-		echo "	server_name $*;"
+		echo "	server_name $server_name;"
 		echo "	location / {"
 		echo "		proxy_pass http://$address:$port;"
 		echo "		proxy_http_version 1.1;"
@@ -94,6 +141,14 @@ add-https-vhost () {
 	local port=$2
 	shift
 	shift
+	local server_name=$*
+
+	[ "${INDEX_PAGE_PATH}" != "" ] && {
+		(
+			echo '<br /><a href="https://'$server_name'">'$server_name'</a>'
+		) >> "${INDEX_PAGE_PATH}"
+	}
+
 	
 	(
 		echo "server {"

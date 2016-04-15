@@ -7,7 +7,7 @@ TimeoutStartSec=0
 RemainAfterExit=true
 ExecStartPre=-/usr/bin/docker kill reverse-proxy
 ExecStartPre=-/usr/bin/docker rm -f reverse-proxy
-ExecStartPre=/usr/bin/docker pull darco/reverse-proxy
+ExecStartPre=-/usr/bin/docker pull darco/reverse-proxy
 ExecStartPre=-/usr/bin/docker create --name="reverse-proxy-backing" darco/reverse-proxy
 ExecStart=/usr/bin/docker run \
 	-d \
