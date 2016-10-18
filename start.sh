@@ -95,9 +95,9 @@ add-vhost-index () {
 
 	[ "${server_name}" = "" ] && return
 
+	export INDEX_PAGE_PATH="$INDEX_PAGE_ROOT/index.html"
 	mkdir -p "$INDEX_PAGE_ROOT"
 	add-static-vhost "$INDEX_PAGE_ROOT" "${server_name}"
-	export INDEX_PAGE_PATH="$INDEX_PAGE_ROOT/index.html"
 	rm -f "$INDEX_PAGE_PATH"
 	touch "$INDEX_PAGE_PATH"
 }
