@@ -102,6 +102,35 @@ add-vhost-index () {
 	touch "$INDEX_PAGE_PATH"
 }
 
+_echo-location-info () {
+	local proxy_pass="$1"
+	echo "	location / {"
+	echo "		proxy_pass ${proxy_pass}/;"
+	echo "		proxy_http_version 1.1;"
+	echo '		proxy_redirect off;'
+	echo '		proxy_set_header X-Real-IP $remote_addr;'
+	echo '		proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;'
+	echo '		proxy_set_header X-NginX-Proxy true;'
+	echo '		proxy_set_header Host $http_host;'
+	echo '		proxy_set_header Upgrade $http_upgrade;'
+	echo '		proxy_set_header Connection $connection_upgrade;'
+	echo "	}"
+
+	echo "	location /api/websocket/ {"
+	echo "		proxy_pass ${proxy_pass}/api/websocket/;"
+	echo "		proxy_http_version 1.1;"
+	echo '      proxy_set_header Upgrade $http_upgrade;'
+	echo '		proxy_set_header X-Real-IP $remote_addr;'
+	echo '		proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;'
+	echo '		proxy_set_header X-NginX-Proxy true;'
+	#echo '		proxy_set_header Host $http_host;'
+	echo '		proxy_set_header Upgrade $http_upgrade;'
+	#echo '		proxy_set_header Connection $connection_upgrade;'
+	echo '      proxy_set_header Connection "upgrade";'
+	echo "	}"
+
+}
+
 add-http-vhost () {
 	local address=$1
 	local port=$2
@@ -120,17 +149,7 @@ add-http-vhost () {
 		add-server-port-stuff
 		echo "	large_client_header_buffers 8 32k;"
 		echo "	server_name $server_name;"
-		echo "	location / {"
-		echo "		proxy_pass http://$address:$port;"
-		echo "		proxy_http_version 1.1;"
-		echo '		proxy_redirect off;'
-		echo '		proxy_set_header X-Real-IP $remote_addr;'
-		echo '		proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;'
-		echo '		proxy_set_header X-NginX-Proxy true;'
-		echo '		proxy_set_header Host $http_host;'
-		echo '		proxy_set_header Upgrade $http_upgrade;'
-        echo '		proxy_set_header Connection $connection_upgrade;'
-		echo "	}"
+		_echo-location-info "http://$address:$port"
 		echo "}"
 	) 1>&3
 }
@@ -155,17 +174,7 @@ add-https-vhost () {
 		add-server-port-stuff
 		echo "	large_client_header_buffers 8 32k;"
 		echo "	server_name $*;"
-		echo "	location / {"
-		echo "		proxy_pass https://$address:$port;"
-		echo "		proxy_http_version 1.1;"
-		echo '		proxy_redirect off;'
-		echo '		proxy_set_header X-Real-IP $remote_addr;'
-		echo '		proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;'
-		echo '		proxy_set_header X-NginX-Proxy true;'
-		echo '		proxy_set_header Host $http_host;'
-		echo '		proxy_set_header Upgrade $http_upgrade;'
-        echo '		proxy_set_header Connection $connection_upgrade;'
-		echo "	}"
+		_echo-location-info "https://$address:$port"
 		echo "}"
 	) 1>&3
 }
